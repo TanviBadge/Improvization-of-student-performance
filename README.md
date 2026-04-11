@@ -1,5 +1,7 @@
 # 🎓 Improvization of Student Performance using Machine Learning
 
+The AI that never gives up on a student - predicting performance, providing solutions.
+
 ## 📌 Project Overview
 
 This project focuses on the **Improvization of Student Performance** using Machine Learning algorithms. The system predicts whether a student will pass or fail based on academic, demographic, and behavioral factors. It helps educators identify at-risk students early and provides personalized recommendations for improvement.
