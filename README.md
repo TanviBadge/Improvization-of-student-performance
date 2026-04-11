@@ -1,7 +1,5 @@
 # 🎓 Improvization of Student Performance using Machine Learning
 
-Machine Learning system to predict and improve student academic performance using Gradient Boosting algorithm with 92.6% accuracy.
-
 ## 📌 Project Overview
 
 This project focuses on the **Improvization of Student Performance** using Machine Learning algorithms. The system predicts whether a student will pass or fail based on academic, demographic, and behavioral factors. It helps educators identify at-risk students early and provides personalized recommendations for improvement.
