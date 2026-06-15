@@ -33,7 +33,7 @@ Our system:
 
 - **Source:** UCI Student Performance Dataset
 - **Students:** 1,000 records
-- **Features:** 32 attributes
+- **Features:** 32 attributes,
   Technically 33 columns total, but G3 is the target variable. So 32 features + 1 target = 33 total columns.
 - **Target:** Pass/Fail (G3 ≥ 10)
 
