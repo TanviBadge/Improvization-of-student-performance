@@ -16,7 +16,7 @@ Our system:
 - ✅ Predicts student performance BEFORE final exams
 - ✅ Identifies WHY a student is struggling
 - ✅ Provides PERSONALIZED recommendations
-- ✅ Achieves 92.6% AUC-ROC accuracy
+- ✅ Achives 92.6% AUC-ROC accuracy
 
 ## 🛠️ Technologies Used
 
