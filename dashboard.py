@@ -1,6 +1,5 @@
 """
-Student Performance Dashboard - Cloud Ready
-Automatically trains model if files are missing
+Student Performance Dashboard - With Top Tab Navigation
 """
 
 import streamlit as st
@@ -17,23 +16,17 @@ warnings.filterwarnings('ignore')
 st.set_page_config(page_title="Student Performance Dashboard", page_icon="🎓", layout="wide")
 
 # ============================================
-# AUTO-SETUP: Create data & model if missing
+# AUTO-SETUP (same as before)
 # ============================================
 def setup_if_needed():
-    """Run preprocessing and training if files don't exist"""
-    
     data_exists = os.path.exists('data/student_data.csv')
     model_exists = os.path.exists('models/best_model.pkl')
     
     if not data_exists or not model_exists:
-        with st.spinner("⚙️ First-time setup: Creating data and training model... This may take 1-2 minutes."):
-            
-            # Create directories
+        with st.spinner("⚙️ First-time setup..."):
             os.makedirs('data', exist_ok=True)
             os.makedirs('models', exist_ok=True)
-            os.makedirs('visualizations', exist_ok=True)
             
-            # ---- STEP 1: Create Data ----
             if not data_exists:
                 np.random.seed(42)
                 n = 1000
@@ -47,31 +40,24 @@ def setup_if_needed():
                     'school_support': np.random.choice(['yes', 'no'], n, p=[0.25, 0.75]),
                     'internet': np.random.choice(['yes', 'no'], n, p=[0.65, 0.35]),
                     'higher_education': np.random.choice(['yes', 'no'], n, p=[0.7, 0.3]),
-                    'G1': np.zeros(n),
-                    'G2': np.zeros(n),
-                    'G3': np.zeros(n)
+                    'G1': np.zeros(n), 'G2': np.zeros(n), 'G3': np.zeros(n)
                 }
                 for i in range(n):
                     base = data['study_time'][i] * 3.5
                     base -= data['past_failures'][i] * 2.5
                     base -= data['absences'][i] * 0.1
-                    if data['family_support'][i] == 'yes':
-                        base += 1.2
-                    if data['school_support'][i] == 'yes':
-                        base += 0.8
-                    if data['higher_education'][i] == 'yes':
-                        base += 1.5
+                    if data['family_support'][i] == 'yes': base += 1.2
+                    if data['school_support'][i] == 'yes': base += 0.8
+                    if data['higher_education'][i] == 'yes': base += 1.5
                     base += np.random.normal(0, 2)
                     final = max(0, min(20, base))
                     data['G3'][i] = final
                     data['G2'][i] = max(0, min(20, final - np.random.randint(0, 3)))
                     data['G1'][i] = max(0, min(20, final - np.random.randint(0, 4)))
-                
                 df = pd.DataFrame(data)
                 df['passed'] = (df['G3'] >= 10).astype(int)
                 df.to_csv('data/student_data.csv', index=False)
             
-            # ---- STEP 2: Train Model ----
             if not model_exists:
                 from sklearn.model_selection import train_test_split
                 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -81,7 +67,6 @@ def setup_if_needed():
                 X = df.drop(columns=['passed', 'G3'])
                 y = df['passed']
                 
-                # Encode
                 encoders = {}
                 for col in X.select_dtypes(include=['object']).columns:
                     le = LabelEncoder()
@@ -89,28 +74,19 @@ def setup_if_needed():
                     encoders[col] = le
                 joblib.dump(encoders, 'models/label_encoders.pkl')
                 
-                # Split
-                X_train, X_test, y_train, y_test = train_test_split(
-                    X, y, test_size=0.2, random_state=42, stratify=y
-                )
-                
-                # Scale
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
                 scaler = StandardScaler()
                 X_train_s = scaler.fit_transform(X_train)
                 joblib.dump(scaler, 'models/scaler.pkl')
                 
-                # Train
                 model = GradientBoostingClassifier(n_estimators=100, random_state=42)
                 model.fit(X_train_s, y_train)
                 joblib.dump(model, 'models/best_model.pkl')
-            
-            st.success("✅ Setup complete! Model trained successfully.")
 
-# Run setup
 setup_if_needed()
 
 # ============================================
-# LOAD MODELS AND DATA
+# LOAD
 # ============================================
 @st.cache_resource
 def load_models():
@@ -126,19 +102,26 @@ def load_data():
 model, scaler, encoders = load_models()
 df = load_data()
 
-# Title
-st.title("🎓 Student Performance Prediction System")
-st.markdown("### AI-Powered Early Warning System")
-st.markdown("---")
-
-# Sidebar
-st.sidebar.header("📊 Navigation")
-page = st.sidebar.radio("Select Page", ["📊 Dashboard", "🎯 Predict Student", "💡 Insights"])
+# ============================================
+# HEADER
+# ============================================
+st.markdown("""
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 2rem; border-radius: 1rem; color: white; text-align: center; margin-bottom: 2rem;">
+    <h1 style="margin: 0;">🎓 Student Performance Prediction System</h1>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">AI-Powered Early Warning System</p>
+</div>
+""", unsafe_allow_html=True)
 
 # ============================================
-# PAGE 1: DASHBOARD
+# TOP TABS NAVIGATION
 # ============================================
-if page == "📊 Dashboard":
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard", "🎯 Predict Student", "💡 Insights"])
+
+# ============================================
+# TAB 1: DASHBOARD
+# ============================================
+with tab1:
     st.header("📊 Performance Dashboard")
     
     col1, col2, col3, col4 = st.columns(4)
@@ -164,13 +147,12 @@ if page == "📊 Dashboard":
         st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# PAGE 2: PREDICT
+# TAB 2: PREDICT
 # ============================================
-elif page == "🎯 Predict Student":
+with tab2:
     st.header("🎯 Predict Student Performance")
     
     col1, col2 = st.columns(2)
-    
     with col1:
         age = st.slider("Age", 15, 22, 17)
         gender = st.selectbox("Gender", ["M", "F"])
@@ -224,9 +206,9 @@ elif page == "🎯 Predict Student":
             st.plotly_chart(fig, use_container_width=True)
 
 # ============================================
-# PAGE 3: INSIGHTS
+# TAB 3: INSIGHTS
 # ============================================
-else:
+with tab3:
     st.header("💡 Key Insights")
     
     col1, col2 = st.columns(2)
